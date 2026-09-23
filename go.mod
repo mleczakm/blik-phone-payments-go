@@ -1,4 +1,4 @@
-module github.com/mleczakm/payments-go
+module github.com/mleczakm/blik-phone-payments-go
 
 go 1.26.0
 

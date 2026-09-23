@@ -1,4 +1,4 @@
-package payments
+package blikpayments
 
 import (
 	"encoding/base64"

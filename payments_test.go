@@ -1,4 +1,4 @@
-package payments
+package blikpayments
 
 import "testing"
 
@@ -50,6 +50,42 @@ func TestFindCode(t *testing.T) {
 		if got := FindCode(title, codes); got != want {
 			t.Errorf("FindCode(%q) = %q, want %q", title, got, want)
 		}
+	}
+}
+
+func TestFindCodeCoversKiddoMatchingCases(t *testing.T) {
+	tests := []struct {
+		name  string
+		codes []string
+		title string
+		want  string
+	}{
+		{"single word code", []string{"TEST"}, "Payment for order TEST additional text", "TEST"},
+		{"missed zero with O", []string{"TES0"}, "Payment for order TESO additional text", "TES0"},
+		{"missed O with zero", []string{"TESO"}, "Payment for order TES0 additional text", "TESO"},
+		{"missed O with zero and zero with O", []string{"T0SO"}, "Payment for order TOS0 additional text", "T0SO"},
+		{"code in middle", []string{"XYZ9"}, "Some random text XYZ9 more text here", "XYZ9"},
+		{"code at end", []string{"END1"}, "Transfer description ending with END1", "END1"},
+		{"special characters", []string{"SPEC"}, "Payment: SPEC - for services!", "SPEC"},
+		{"special character after code", []string{"SPEC"}, "Payment: SPEC, - for services!", "SPEC"},
+		{"code split by space", []string{"SPEC"}, "Payment: SPE C, - for services!", "SPEC"},
+		{"description split by space", []string{"SPEC"}, "Pay ment: SPE C, - for services!", "SPEC"},
+		{"description and code split by repeated spaces", []string{"SPEC"}, "Pay  ment: SPE  C, - for services!", "SPEC"},
+		{"description and code split by many spaces", []string{"SPEC"}, "Pay  ment: SPE   C, - for services!", "SPEC"},
+		{"first matching code in title wins", []string{"AAA1", "BBB2"}, "Payment AAA1 and also BBB2", "AAA1"},
+		{"BLIK phone transfer suffix", []string{"ZW4D"}, "ZW4D                                Od: 48512112450 Do: 485*****213", "ZW4D"},
+		{"case insensitive", []string{"CASE"}, "payment with lowercase case code", "CASE"},
+		{"empty title", []string{"TEST"}, "", ""},
+		{"spaces only", []string{"TEST"}, "   ", ""},
+		{"missing code", []string{"TEST"}, "Transfer without any payment code", ""},
+		{"non-existent code", []string{"TEST"}, "Transfer with NONEXISTENT code", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := FindCode(tt.title, tt.codes); got != tt.want {
+				t.Errorf("FindCode(%q, %v) = %q, want %q", tt.title, tt.codes, got, tt.want)
+			}
+		})
 	}
 }
 

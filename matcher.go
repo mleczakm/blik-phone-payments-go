@@ -1,4 +1,4 @@
-package payments
+package blikpayments
 
 import (
 	"crypto/rand"
@@ -39,7 +39,15 @@ func FindCode(title string, codes []string) string {
 	for _, c := range codes {
 		want[normalize.Replace(strings.ToUpper(c))] = c
 	}
-	for _, tok := range tokens {
+
+	// Match standalone title tokens first, in order, just like Kiddo's matcher.
+	// Then try adjacent token pairs so bank formats such as "SPE C" can still
+	// match the customer-entered code "SPEC".
+	candidates := append([]string(nil), tokens...)
+	for i := 0; i+1 < len(tokens); i++ {
+		candidates = append(candidates, tokens[i]+tokens[i+1])
+	}
+	for _, tok := range candidates {
 		if c, ok := want[normalize.Replace(tok)]; ok {
 			return c
 		}

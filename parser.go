@@ -1,6 +1,6 @@
-// Package payments imports bank transfer notifications (BLIK to phone / bank transfer) from an IMAP
+// Package blikpayments imports bank transfer notifications (BLIK to phone / bank transfer) from an IMAP
 // mailbox and matches them to orders by the 4-character payment code in the transfer title.
-package payments
+package blikpayments
 
 import (
 	"errors"
